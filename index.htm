@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>俺専用バスナビ (Complete)</title>
+
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="apple-touch-icon.png">
+
+  <!-- スタイルシート（見た目） -->
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #e6e6e6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 15px;
+      text-align: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.5em;
+      color: #ccc;
+    }
+    
+    #nextBusResult {
+      background-color: #2c2c2c;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    /* ★★★ 「次のバス」ラベルのスタイル ★★★ */
+    .next-bus-label {
+      font-size: 0.9em;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+    #nextBusResult .time {
+      font-size: clamp(2.2em, 10vw, 2.8em);
+      font-weight: bold;
+      color: #58a6ff;
+    }
+    #nextBusResult .details {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .detail-tag {
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 1em;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .location-tag {
+      background-color: #4a4a4e;
+      color: #e0e0e0;
+    }
+    .route-tag {
+      background-color: #58a6ff;
+      color: #1a1a1a;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #busStopContainer { margin: 30px 0 15px 0; }
+    #routeFilterContainer { margin-bottom: 30px; }
+
+    .filter-button {
+      font-size: 1em;
+      padding: 12px 20px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background-color: #333;
+      color: #e6e6e6;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .filter-button:hover { background-color: #444; }
+    .filter-button.active {
+      background-color: #58a6ff;
+      color: #1a1a1a;
+      font-weight: bold;
+    }
+    .route-filter-button {
+      padding: 8px 16px;
+      font-size: 0.9em;
+    }
+
+
+    #upcomingBusesResult { text-align: left; }
+    .bus-item {
+      background-color: #222;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .bus-item .time { font-size: 1.5em; font-weight: 500; }
+    .bus-item .route { font-size: 1em; color: #aaa; }
+
+    /* ★★★ フッターのスタイル ★★★ */
+    footer {
+      margin-top: 50px;
+      padding: 20px;
+      border-top: 1px solid #333;
+      font-size: 0.8em;
+      color: #888;
+    }
+    footer a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    footer p {
+        margin: 10px 0;
+    }
+
+    /* ★★★ トップに戻るボタンのスタイル ★★★ */
+    #backToTopButton {
+      display: none; /* 初期状態では非表示 */
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99;
+      border: none;
+      outline: none;
+      background-color: #58a6ff;
+      color: white;
+      cursor: pointer;
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 1em;
+    }
+    #backToTopButton:hover {
+      background-color: #357ae8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>俺専用バスナビ</h1>
+
+    <div id="nextBusResult">
+      <!-- ★★★ 「次のバス」ラベルを追加 ★★★ -->
+      <div class="next-bus-label">次のバス</div>
+      <div class="time">検索中...</div>
+      <div class="details"></div>
+    </div>
+
+    <div id="busStopContainer" class="button-container">
+      <button class="filter-button" data-stop="yokodaikita">洋光台北口</button>
+      <button class="filter-button" data-stop="hinosyo">日野小学校前</button>
+      <button class="filter-button" data-stop="hinotyuokouen">日野中央公園入口</button>
+    </div>
+
+    <div id="routeFilterContainer" class="button-container">
+      <button class="filter-button route-filter-button" data-route="all">すべて</button>
+      <button class="filter-button route-filter-button" data-route="市営111">市営111</button>
+      <button class="filter-button route-filter-button" data-route="市営64">市営64</button>
+      <button class="filter-button route-filter-button" data-route="市営2">市営2</button>
+    </div>
+
+    <div id="upcomingBusesResult">
+      <p style="color: #666;">上のバス停ボタンを押してください</p>
+    </div>
+  </div>
+
+  <!-- ★★★ フッターを追加 ★★★ -->
+  <footer>
+    <p>最終更新日: 2025/07/27</p>
+    <p>
+      この時刻が間違っていても責任は負いかねます。<br>
+      正確な情報は<a href="https://www.city.yokohama.lg.jp/kotsu/bus/" target="_blank" rel="noopener noreferrer">横浜市営バス公式サイト</a>をご確認ください。
+    </p>
+  </footer>
+
+  <!-- ★★★ トップに戻るボタンを追加 ★★★ -->
+  <button id="backToTopButton">▲</button>
+
+
+  <!-- スクリプト（頭脳） -->
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbw5hntrvbWws0nhsHsCbBMr3iEsPTCZJHnQ8wvdFDJ6DKbG58hyCFrOVpqwqg59IvwgUg/exec";
+    let allBusData = [];
+    
+    const busStopNames = {
+      yokodaikita: "洋光台北口",
+      hinosyo: "日野小学校前",
+      hinotyuokouen: "日野中央公園入口"
+    };
+
+    let currentStopId = null;
+    let currentRouteFilter = 'all';
+
+    const nextBusResultDiv = document.getElementById('nextBusResult');
+    const busStopButtons = document.querySelectorAll('#busStopContainer .filter-button');
+    const routeFilterButtons = document.querySelectorAll('#routeFilterContainer .filter-button');
+    const upcomingBusesResultDiv = document.getElementById('upcomingBusesResult');
+    // ★★★ トップに戻るボタンの要素を取得 ★★★
+    const backToTopButton = document.getElementById('backToTopButton');
+
+    function getCurrentTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    // --- 初期化処理 ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch(API_URL);
+        allBusData = await response.json();
+        allBusData.sort((a, b) => a.time.localeCompare(b.time));
+        displayFastestBus();
+        document.querySelector('.filter-button[data-route="all"]').classList.add('active');
+      } catch (error) {
+        console.error("データ取得エラー:", error);
+        nextBusResultDiv.querySelector('.time').textContent = "データ取得失敗";
+      }
+    });
+
+    // --- イベントリスナー設定 ---
+    busStopButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        busStopButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        currentStopId = button.dataset.stop;
+        displayUpcomingBuses();
+      });
+    });
+    routeFilterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        routeFilterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        currentRouteFilter = button.dataset.route;
+        displayUpcomingBuses();
+      });
+    });
+
+    // ★★★ トップに戻るボタンのイベントリスナー ★★★
+    // スクロールしたらボタンを表示/非表示
+    window.onscroll = () => {
+      if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+        backToTopButton.style.display = "block";
+      } else {
+        backToTopButton.style.display = "none";
+      }
+    };
+    // クリックしたらトップにスクロール
+    backToTopButton.addEventListener('click', () => {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+
+
+    // --- 表示更新関数 ---
+    function displayFastestBus() {
+      const currentTime = getCurrentTime();
+      const targetStops = ['yokodaikita', 'hinosyo'];
+      const fastestBus = allBusData.find(bus => 
+        targetStops.includes(bus.busStop) && bus.time >= currentTime
+      );
+      const timeDiv = nextBusResultDiv.querySelector('.time');
+      const detailsDiv = nextBusResultDiv.querySelector('.details');
+      if (fastestBus) {
+        timeDiv.textContent = `${fastestBus.time} 発`;
+        detailsDiv.innerHTML = `
+          <span class="detail-tag location-tag">${busStopNames[fastestBus.busStop]}</span>
+          <span class="detail-tag route-tag">${fastestBus.route}</span>
+        `;
+      } else {
+        timeDiv.textContent = "本日のバスは終了";
+        detailsDiv.innerHTML = ""; // 詳細タグは不要なので空にする
+      }
+    }
+
+    function displayUpcomingBuses() {
+      if (!currentStopId) return;
+      const currentTime = getCurrentTime();
+      let upcomingBuses = allBusData.filter(bus => bus.busStop === currentStopId && bus.time >= currentTime);
+      if (currentRouteFilter !== 'all') {
+        upcomingBuses = upcomingBuses.filter(bus => bus.route === currentRouteFilter);
+      }
+      upcomingBusesResultDiv.innerHTML = ""; 
+      if (upcomingBuses.length > 0) {
+        upcomingBuses.forEach(bus => {
+          const busItem = `<div class="bus-item"><div class="time">${bus.time} 発</div><div class="route">${bus.route}</div></div>`;
+          upcomingBusesResultDiv.innerHTML += busItem;
+        });
+      } else {
+        upcomingBusesResultDiv.innerHTML = `<p style="color: #666;">条件に合うバスはありません。</p>`;
+      }
+    }
+  </script>
+
+</body>
+</html>
