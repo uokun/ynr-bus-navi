@@ -86,47 +86,36 @@
   <div class="container">
     <div class="header">
       <h1 class="title">バスナビ</h1>
-      <p class="subtitle">ver16</p>
+      <p class="subtitle">v16.1</p>
     </div>
-    
     <div class="mode-switcher">
       <button class="mode-button active" data-mode="to_kamiooka">南陵方面 → 上大岡</button>
       <button class="mode-button" data-mode="from_kamiooka">上大岡 → 古泉</button>
     </div>
-    
-    <div class="clock">
-      <div class="current-time" id="currentTime">--:--:--</div>
-    </div>
-    
+    <div class="clock"><div class="current-time" id="currentTime">--:--:--</div></div>
     <div class="main-card loading" id="nextBusResult">
       <div class="loading-spinner"></div>
       <div>読み込み中...</div>
     </div>
-    
     <div class="lower-section" id="lowerSection">
       <div class="button-container" id="busStopContainer">
         <button class="filter-button" data-stop="yokodaikita">洋光台北口</button>
         <button class="filter-button" data-stop="hinosyo">日野小学校前</button>
         <button class="filter-button" data-stop="hinotyuokouen">日野中央公園入口</button>
       </div>
-      
       <div class="button-container" id="routeFilterContainer">
         <button class="filter-button route-filter-button" data-route="all">すべて</button>
         <button class="filter-button route-filter-button" data-route="市営111">市営111</button>
         <button class="filter-button route-filter-button" data-route="市営64">市営64</button>
         <button class="filter-button route-filter-button" data-route="市営2">市営2</button>
       </div>
-      
       <div class="upcoming-buses" id="upcomingBusesResult"></div>
     </div>
   </div>
-  
   <footer>
     <p>最終更新日: 2025/08/09</p>
-    <p>この時刻が間違っていても責任は負いかねます。<br>
-    正確な情報は<a href="https://www.city.yokohama.lg.jp/kotsu/bus/" target="_blank" rel="noopener noreferrer">横浜市営バス公式サイト</a>をご確認ください。</p>
+    <p>この時刻が間違っていても責任は負いかねます。<br>正確な情報は<a href="https://www.city.yokohama.lg.jp/kotsu/bus/" target="_blank" rel="noopener noreferrer">横浜市営バス公式サイト</a>をご確認ください。</p>
   </footer>
-  
   <button class="back-to-top" id="backToTopButton">↑</button>
 
   <script>
@@ -135,13 +124,6 @@
     let allBusData = [], allOptimalPairs = [], optimalPairIndex = 0;
     let nextBusFromKamiooka = null, secondBusFromKamiooka = null;
     const busStopNames = { yokodaikita: "洋光台北口", hinosyo: "日野小学校前", hinotyuokouen: "日野中央公園入口", kamioooka: "上大岡駅前", kosen: "古泉" };
-    
-    // ★★★ 基準となる地点の緯度経度 ★★★
-    const LOCATIONS = {
-        nanryo: { lat: 35.385, lon: 139.585 }, // 南陵エリア（仮の座標）
-        kamiooka: { lat: 35.409, lon: 139.595 }  // 上大岡駅（仮の座標）
-    };
-
     let currentMode = 'to_kamiooka', currentStopId = null, currentRouteFilter = 'all';
     
     const modeButtons = document.querySelectorAll('.mode-button');
@@ -156,100 +138,58 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       setInterval(() => { const now = new Date(); currentTimeDiv.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`; }, 1000);
-      
       try {
-        await getUserLocationAndSetMode(); // ★★★ 位置情報を先に取得 ★★★
-
+        await getUserLocationAndSetMode();
         const response = await fetch(API_URL);
         const data = await response.json();
         const today = new Date();
         const y = today.getFullYear(), m = today.getMonth(), d = today.getDate();
-        
         allBusData = data.map(bus => {
           const [h, min] = bus.time.split(':').map(Number);
           bus.departureTimestamp = new Date(y, m, d, h, min).getTime();
-          if (bus.arrivalTime) {
-            const [ah, amin] = bus.arrivalTime.split(':').map(Number);
-            bus.arrivalTimestamp = new Date(y, m, d, ah, amin).getTime();
-          }
+          if (bus.arrivalTime) { const [ah, amin] = bus.arrivalTime.split(':').map(Number); bus.arrivalTimestamp = new Date(y, m, d, ah, amin).getTime(); }
           return bus;
         }).sort((a, b) => a.departureTimestamp - b.departureTimestamp);
-        
         nextBusResultDiv.classList.remove('loading');
         findAndDisplay();
         updateLowerSection();
-        
         setInterval(updateCountdowns, 1000);
         setInterval(findAndDisplay, 30000);
-        
         document.querySelector('.filter-button[data-route="all"]').classList.add('active');
       } catch (error) {
         console.error("エラー:", error);
         nextBusResultDiv.classList.remove('loading');
-        // 位置情報エラーも考慮したメッセージ
-        if (error.code === 1) { // code 1 は許可されなかった場合
-             nextBusResultDiv.innerHTML = '<div style="text-align: center; color: var(--text-secondary);">位置情報が許可されませんでした。<br>手動でモードを選択してください。</div>';
-        } else {
-            nextBusResultDiv.innerHTML = '<div style="text-align: center; color: var(--error);">データの取得に失敗しました</div>';
-        }
+        if (error.code === 1) { nextBusResultDiv.innerHTML = '<div style="text-align: center; color: var(--text-secondary);">位置情報が許可されませんでした。<br>手動でモードを選択してください。</div>'; } 
+        else { nextBusResultDiv.innerHTML = '<div style="text-align: center; color: var(--error);">データの取得に失敗しました</div>'; }
       }
     });
 
-    // ★★★ 位置情報取得とモード自動設定の関数 ★★★
     function getUserLocationAndSetMode() {
         return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                console.log("位置情報がサポートされていません。");
-                resolve(); // サポートされていなくても処理は続ける
-                return;
-            }
-
+            if (!navigator.geolocation) { resolve(); return; }
+            const LOCATIONS = { nanryo: { lat: 35.385, lon: 139.585 }, kamiooka: { lat: 35.409, lon: 139.595 } };
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    const userLat = position.coords.latitude;
-                    const userLon = position.coords.longitude;
-
+                    const { latitude: userLat, longitude: userLon } = position.coords;
                     const distToNanryo = getDistance(userLat, userLon, LOCATIONS.nanryo.lat, LOCATIONS.nanryo.lon);
                     const distToKamiooka = getDistance(userLat, userLon, LOCATIONS.kamiooka.lat, LOCATIONS.kamiooka.lon);
-                    
-                    console.log(`南陵までの距離: ${distToNanryo.toFixed(2)} km`);
-                    console.log(`上大岡までの距離: ${distToKamiooka.toFixed(2)} km`);
-
-                    if (distToKamiooka < distToNanryo) {
-                        currentMode = 'from_kamiooka';
-                    } else {
-                        currentMode = 'to_kamiooka';
-                    }
-                    
-                    // UIのボタン表示を更新
-                    modeButtons.forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.mode === currentMode);
-                    });
-                    
+                    currentMode = (distToKamiooka < distToNanryo) ? 'from_kamiooka' : 'to_kamiooka';
+                    modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === currentMode));
                     resolve();
                 },
-                (error) => {
-                    console.warn(`位置情報取得エラー (${error.code}): ${error.message}`);
-                    reject(error); // エラーを上位に伝える
-                },
-                { timeout: 10000 } // 10秒でタイムアウト
+                (error) => { console.warn(`位置情報取得エラー (${error.code}): ${error.message}`); reject(error); },
+                { timeout: 10000 }
             );
         });
     }
 
-    // ★★★ 2点間の距離を計算するヘルパー関数 (ヒュベニの公式) ★★★
     function getDistance(lat1, lon1, lat2, lon2) {
-        function toRad(deg) { return deg * Math.PI / 180; }
-        const R = 6371; // 地球の半径 (km)
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lon2 - lon1);
-        const lat1Rad = toRad(lat1);
-        const lat2Rad = toRad(lat2);
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1Rad) * Math.cos(lat2Rad);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+        const toRad = (deg) => deg * Math.PI / 180;
+        const R = 6371;
+        const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
-
 
     modeButtons.forEach(button => {
       button.addEventListener('click', () => {
@@ -261,176 +201,50 @@
       });
     });
 
+    // ★★★ ロジックを修正 ★★★
     function updateLowerSection() {
-      if (currentMode === 'to_kamiooka') {
-        lowerSection.style.display = 'flex';
-        if (!currentStopId) {
-          upcomingBusesResultDiv.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">上のバス停ボタンを押して詳細を表示</p>`;
-        } else {
-          displayUpcomingBuses();
+        if (currentMode === 'to_kamiooka') {
+            lowerSection.style.display = 'flex';
+            busStopContainer.style.display = 'flex';
+            routeFilterContainer.style.display = 'flex';
+            if (!currentStopId) {
+                upcomingBusesResultDiv.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">上のバス停ボタンを押して詳細を表示</p>`;
+            } else {
+                displayUpcomingBuses();
+            }
+        } else { // from_kamiooka
+            lowerSection.style.display = 'block'; // block に変更
+            busStopContainer.style.display = 'none'; // 非表示
+            routeFilterContainer.style.display = 'none'; // 非表示
+            displayKamiookaBusList();
         }
-      } else {
-        lowerSection.style.display = 'none';
-        displayKamiookaBusList();
-      }
     }
     
-    function findAndDisplay() {
-      if (currentMode === 'to_kamiooka') {
-        optimalPairIndex = 0;
-        allOptimalPairs = findOptimalTransfers();
-        displayTransferInfo();
-      } else {
-        const now = new Date().getTime();
-        const available = allBusData.filter(b => b.busStop === 'kamioooka' && b.departureTimestamp >= now);
-        nextBusFromKamiooka = available[0] || null;
-        secondBusFromKamiooka = available[1] || null;
-        displayDirectBusInfo();
-      }
-    }
+    function findAndDisplay() { /* ... */ } // (省略)
+    function findOptimalTransfers() { /* ... */ } // (省略)
+    function displayTransferInfo() { /* ... */ } // (省略)
+    function displayDirectBusInfo() { /* ... */ } // (省略)
+    function updateCountdowns() { /* ... */ } // (省略)
+    function formatRemainingTime(ms, simple = false) { /* ... */ } // (省略)
+    function displayKamiookaBusList() { /* ... */ } // (省略)
     
-    function findOptimalTransfers() {
-      const now = new Date().getTime();
-      const transferBufferMs = TRANSFER_BUFFER_MINUTES * 60 * 1000;
-      const futureToKamiooka = allBusData.filter(b => ['yokodaikita', 'hinosyo', 'hinotyuokouen'].includes(b.busStop) && b.departureTimestamp >= now);
-      const futureFromKamiooka = allBusData.filter(b => b.busStop === 'kamioooka' && b.departureTimestamp >= now);
-      
-      if (!futureToKamiooka.length || !futureFromKamiooka.length) return [];
-      
-      const pairs = [];
-      for (const departureBus of futureToKamiooka) {
-        if (!departureBus.arrivalTimestamp) continue;
-        
-        const connectingBus = futureFromKamiooka.find(transferBus => 
-          transferBus.departureTimestamp >= (departureBus.arrivalTimestamp + transferBufferMs)
-        );
-        
-        if (connectingBus) {
-          if (!pairs.some(p => p.connectingBus.time === connectingBus.time)) {
-            pairs.push({ departureBus, connectingBus });
-          }
-        }
-      }
-      return pairs;
-    }
-
-    function displayTransferInfo() {
-      const optimalPair = allOptimalPairs[optimalPairIndex];
-
-      if (optimalPair) {
-        const { departureBus, connectingBus } = optimalPair;
-        const waitTimeMin = Math.floor((connectingBus.departureTimestamp - departureBus.arrivalTimestamp) / (1000 * 60));
-        
-        const prevButtonDisabled = (optimalPairIndex <= 0) ? 'disabled' : '';
-        const nextButtonDisabled = (optimalPairIndex >= allOptimalPairs.length - 1) ? 'disabled' : '';
-
-        nextBusResultDiv.innerHTML = `
-          <div class="card-actions">
-            <button class="nav-button" id="prev-option-btn" ${prevButtonDisabled}>← 前の候補</button>
-            <button class="nav-button" id="next-option-btn" ${nextButtonDisabled}>次の候補 →</button>
-          </div>
-          <div class="main-countdown" id="main-countdown"></div>
-          <div class="itinerary">
-            <div class="itinerary-step">
-              <div class="step-time">${departureBus.time}</div>
-              <div class="step-location">${busStopNames[departureBus.busStop]}</div>
-            </div>
-            <div class="itinerary-connector">
-              <div class="connector-icon">🚌</div>
-              <div class="connector-text">${departureBus.route} 上大岡行</div>
-            </div>
-            <div class="itinerary-step">
-              <div class="step-time">${departureBus.arrivalTime}</div>
-              <div class="step-location">上大岡駅 到着</div>
-            </div>
-            <div class="itinerary-connector">
-              <div class="connector-icon">${waitTimeMin}分</div>
-              <div class="connector-text">乗り換え</div>
-            </div>
-            <div class="itinerary-step">
-              <div class="step-time">${connectingBus.time}</div>
-              <div class="step-location">上大岡駅 発車</div>
-            </div>
-            <div class="itinerary-connector">
-              <div class="connector-icon">🚌</div>
-              <div class="connector-text">${connectingBus.route}</div>
-            </div>
-            <div class="itinerary-step">
-              <div class="step-time">${connectingBus.arrivalTime}</div>
-              <div class="step-location">古泉 到着</div>
-            </div>
-          </div>
-        `;
-        
-        document.getElementById('prev-option-btn').addEventListener('click', () => { if (optimalPairIndex > 0) { optimalPairIndex--; displayTransferInfo(); } });
-        document.getElementById('next-option-btn').addEventListener('click', () => { if (optimalPairIndex < allOptimalPairs.length - 1) { optimalPairIndex++; displayTransferInfo(); } });
-      } else {
-        nextBusResultDiv.innerHTML = `<div style="text-align: center;"><div class="departure-time-main">終了</div><div class="time-remaining-direct">最適な接続がありません</div></div>`;
-      }
-    }
-
-    function displayDirectBusInfo() {
-      if (nextBusFromKamiooka) {
-        const secondBusHTML = secondBusFromKamiooka ? `<div class="second-bus"><div class="second-bus-info"><span>その次は:</span><span class="second-bus-time">${secondBusFromKamiooka.time} 発</span><span>(${busStopNames[secondBusFromKamiooka.busStop]} / ${secondBusFromKamiooka.route})</span></div><div class="second-countdown" id="second-countdown"></div></div>` : `<div class="second-bus">これが最終バスです</div>`;
-        nextBusResultDiv.innerHTML = `<div style="text-align: center;"><div class="departure-time-main">${nextBusFromKamiooka.time}</div><div class="time-remaining-direct" id="main-countdown"></div><div class="details-direct"><span class="detail-tag">${busStopNames[nextBusFromKamiooka.busStop]}</span><span class="detail-tag">${nextBusFromKamiooka.route}</span></div><hr class="divider">${secondBusHTML}</div>`;
-      } else {
-        nextBusResultDiv.innerHTML = `<div style="text-align: center;"><div class="departure-time-main">終了</div><div class="time-remaining-direct">お疲れ様でした</div></div>`;
-      }
-    }
-    
-    function updateCountdowns() {
-      const now = new Date().getTime();
-      let busToTrack;
-      if (currentMode === 'to_kamiooka') {
-        const optimalPair = allOptimalPairs[optimalPairIndex];
-        busToTrack = optimalPair ? optimalPair.departureBus : null;
-        const countdownEl = document.getElementById('main-countdown');
-        if (busToTrack && countdownEl) {
-          const diff = busToTrack.departureTimestamp - now;
-          if (diff < 0) { findAndDisplay(); return; }
-          countdownEl.textContent = formatRemainingTime(diff);
-        }
-      } else {
-        busToTrack = nextBusFromKamiooka;
-        const secondCountdownEl = document.getElementById('second-countdown');
-        if (secondBusFromKamiooka && secondCountdownEl) {
-          secondCountdownEl.textContent = `あと ${formatRemainingTime(secondBusFromKamiooka.departureTimestamp - now, true)}`;
-        }
-        const countdownEl = document.getElementById('main-countdown');
-        if (busToTrack && countdownEl) {
-          const diff = busToTrack.departureTimestamp - now;
-          if (diff < 0) { findAndDisplay(); return; }
-          countdownEl.textContent = formatRemainingTime(diff);
-        }
-      }
-    }
-
-    function formatRemainingTime(ms, simple = false) {
-      const totalSeconds = Math.round(ms / 1000);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      if (minutes < 1 && totalSeconds <= 10) return "まもなく発車";
-      if (minutes < 1) return `あと ${seconds} 秒`;
-      if (simple) return `${minutes}分`;
-      return `あと ${minutes}分 ${String(seconds).padStart(2, '0')}秒`;
-    }
-    
-    function displayKamiookaBusList() {
-      const now = new Date().getTime();
-      const upcomingBuses = allBusData.filter(bus => bus.busStop === 'kamioooka' && bus.departureTimestamp >= now);
-      if (upcomingBuses.length > 0) {
-        upcomingBusesResultDiv.innerHTML = upcomingBuses.map(bus => `<div class="bus-item"><div class="bus-time">${bus.time} 発</div><div class="bus-route">${bus.route}</div></div>`).join('');
-      } else {
-        upcomingBusesResultDiv.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">本日のバスは終了しました。</p>`;
-      }
-    }
-    
+    // 以下、変更なしの関数群
     const backToTopButton = document.getElementById('backToTopButton');
     busStopButtons.forEach(button => { button.addEventListener('click', () => { busStopButtons.forEach(btn => btn.classList.remove('active')); button.classList.add('active'); currentStopId = button.dataset.stop; displayUpcomingBuses(); }); });
     routeFilterButtons.forEach(button => { button.addEventListener('click', () => { routeFilterButtons.forEach(btn => btn.classList.remove('active')); button.classList.add('active'); currentRouteFilter = button.dataset.route; displayUpcomingBuses(); }); });
     function displayUpcomingBuses() { if (!currentStopId) return; const now = new Date().getTime(); let upcomingBuses = allBusData.filter(bus => bus.busStop === currentStopId && bus.departureTimestamp >= now); if (currentRouteFilter !== 'all') { upcomingBuses = upcomingBuses.filter(bus => bus.route === currentRouteFilter); } upcomingBusesResultDiv.innerHTML = ""; upcomingBusesResultDiv.classList.add('fade-in'); if (upcomingBuses.length > 0) { upcomingBuses.forEach(bus => { const busItem = `<div class="bus-item"><div class="bus-time">${bus.time} 発</div><div class="bus-route">${bus.route}</div></div>`; upcomingBusesResultDiv.innerHTML += busItem; }); } else { upcomingBusesResultDiv.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">条件に合うバスはありません。</p>`; } }
     window.onscroll = () => { if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) { backToTopButton.style.display = "block"; } else { backToTopButton.style.display = "none"; } };
     backToTopButton.addEventListener('click', () => { window.scrollTo({top: 0, behavior: 'smooth'}); });
+  </script>
+  <script>
+    // 省略した関数の完全なコード
+    function findAndDisplay() { if (currentMode === 'to_kamiooka') { optimalPairIndex = 0; allOptimalPairs = findOptimalTransfers(); displayTransferInfo(); } else { const now = new Date().getTime(); const available = allBusData.filter(b => b.busStop === 'kamioooka' && b.departureTimestamp >= now); nextBusFromKamiooka = available[0] || null; secondBusFromKamiooka = available[1] || null; displayDirectBusInfo(); } }
+    function findOptimalTransfers() { const now = new Date().getTime(); const transferBufferMs = TRANSFER_BUFFER_MINUTES * 60 * 1000; const futureToKamiooka = allBusData.filter(b => ['yokodaikita', 'hinosyo', 'hinotyuokouen'].includes(b.busStop) && b.departureTimestamp >= now); const futureFromKamiooka = allBusData.filter(b => b.busStop === 'kamioooka' && b.departureTimestamp >= now); if (!futureToKamiooka.length || !futureFromKamiooka.length) return []; const pairs = []; for (const departureBus of futureToKamiooka) { if (!departureBus.arrivalTimestamp) continue; const connectingBus = futureFromKamiooka.find(transferBus => transferBus.departureTimestamp >= (departureBus.arrivalTimestamp + transferBufferMs)); if (connectingBus) { if (!pairs.some(p => p.connectingBus.time === connectingBus.time)) { pairs.push({ departureBus, connectingBus }); } } } return pairs; }
+    function displayTransferInfo() { const optimalPair = allOptimalPairs[optimalPairIndex]; if (optimalPair) { const { departureBus, connectingBus } = optimalPair; const waitTimeMin = Math.floor((connectingBus.departureTimestamp - departureBus.arrivalTimestamp) / (1000 * 60)); const prevButtonDisabled = (optimalPairIndex <= 0) ? 'disabled' : ''; const nextButtonDisabled = (optimalPairIndex >= allOptimalPairs.length - 1) ? 'disabled' : ''; nextBusResultDiv.innerHTML = `<div class="card-actions"><button class="nav-button" id="prev-option-btn" ${prevButtonDisabled}>← 前の候補</button><button class="nav-button" id="next-option-btn" ${nextButtonDisabled}>次の候補 →</button></div><div class="main-countdown" id="main-countdown"></div><div class="itinerary"><div class="itinerary-step"><div class="step-time">${departureBus.time}</div><div class="step-location">${busStopNames[departureBus.busStop]}</div></div><div class="itinerary-connector"><div class="connector-icon">🚌</div><div class="connector-text">${departureBus.route} 上大岡行</div></div><div class="itinerary-step"><div class="step-time">${departureBus.arrivalTime}</div><div class="step-location">上大岡駅 到着</div></div><div class="itinerary-connector"><div class="connector-icon">${waitTimeMin}分</div><div class="connector-text">乗り換え</div></div><div class="itinerary-step"><div class="step-time">${connectingBus.time}</div><div class="step-location">上大岡駅 発車</div></div><div class="itinerary-connector"><div class="connector-icon">🚌</div><div class="connector-text">${connectingBus.route}</div></div><div class="itinerary-step"><div class="step-time">${connectingBus.arrivalTime}</div><div class="step-location">古泉 到着</div></div></div>`; document.getElementById('prev-option-btn').addEventListener('click', () => { if (optimalPairIndex > 0) { optimalPairIndex--; displayTransferInfo(); } }); document.getElementById('next-option-btn').addEventListener('click', () => { if (optimalPairIndex < allOptimalPairs.length - 1) { optimalPairIndex++; displayTransferInfo(); } }); } else { nextBusResultDiv.innerHTML = `<div style="text-align: center;"><div class="departure-time-main">終了</div><div class="time-remaining-direct">最適な接続がありません</div></div>`; } }
+    function displayDirectBusInfo() { if (nextBusFromKamiooka) { const secondBusHTML = secondBusFromKamiooka ? `<div class="second-bus"><div class="second-bus-info"><span>その次は:</span><span class="second-bus-time">${secondBusFromKamiooka.time} 発</span><span>(${busStopNames[secondBusFromKamiooka.busStop]} / ${secondBusFromKamiooka.route})</span></div><div class="second-countdown" id="second-countdown"></div></div>` : `<div class="second-bus">これが最終バスです</div>`; nextBusResultDiv.innerHTML = `<div style="text-align: center;"><div class="departure-time-main">${nextBusFromKamiooka.time}</div><div class="time-remaining-direct" id="main-countdown"></div><div class="details-direct"><span class="detail-tag">${busStopNames[nextBusFromKamiooka.busStop]}</span><span class="detail-tag">${nextBusFromKamiooka.route}</span></div><hr class="divider">${secondBusHTML}</div>`; } else { nextBusResultDiv.innerHTML = `<div style="text-align: center;"><div class="departure-time-main">終了</div><div class="time-remaining-direct">お疲れ様でした</div></div>`; } }
+    function updateCountdowns() { const now = new Date().getTime(); let busToTrack; if (currentMode === 'to_kamiooka') { const optimalPair = allOptimalPairs[optimalPairIndex]; busToTrack = optimalPair ? optimalPair.departureBus : null; const countdownEl = document.getElementById('main-countdown'); if (busToTrack && countdownEl) { const diff = busToTrack.departureTimestamp - now; if (diff < 0) { findAndDisplay(); return; } countdownEl.textContent = formatRemainingTime(diff); } } else { busToTrack = nextBusFromKamiooka; const secondCountdownEl = document.getElementById('second-countdown'); if (secondBusFromKamiooka && secondCountdownEl) { secondCountdownEl.textContent = `あと ${formatRemainingTime(secondBusFromKamiooka.departureTimestamp - now, true)}`; } const countdownEl = document.getElementById('main-countdown'); if (busToTrack && countdownEl) { const diff = busToTrack.departureTimestamp - now; if (diff < 0) { findAndDisplay(); return; } countdownEl.textContent = formatRemainingTime(diff); } } }
+    function formatRemainingTime(ms, simple = false) { const totalSeconds = Math.round(ms / 1000); const minutes = Math.floor(totalSeconds / 60); const seconds = totalSeconds % 60; if (minutes < 1 && totalSeconds <= 10) return "まもなく発車"; if (minutes < 1) return `あと ${seconds} 秒`; if (simple) return `${minutes}分`; return `あと ${minutes}分 ${String(seconds).padStart(2, '0')}秒`; }
+    function displayKamiookaBusList() { const now = new Date().getTime(); const upcomingBuses = allBusData.filter(bus => bus.busStop === 'kamioooka' && bus.departureTimestamp >= now); if (upcomingBuses.length > 0) { upcomingBusesResultDiv.innerHTML = upcomingBuses.map(bus => `<div class="bus-item"><div class="bus-time">${bus.time} 発</div><div class="bus-route">${bus.route}</div></div>`).join(''); } else { upcomingBusesResultDiv.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">本日のバスは終了しました。</p>`; } }
   </script>
 </body>
 </html>
