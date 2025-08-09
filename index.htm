@@ -3,25 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>俺専用バスナビ v8.0 (Stylish)</title>
+  <title>俺専用バスナビ v14.1 (Final Polish)</title>
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" href="apple-touch-icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      --dark-bg: #0a0a0f;
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --glass-bg: rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --secondary: #8b5cf6;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      
+      --bg-primary: #0c0c0e;
+      --bg-secondary: #111115;
+      --bg-tertiary: #1a1a20;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-glass: rgba(255, 255, 255, 0.08);
+      --bg-hover: rgba(255, 255, 255, 0.06);
+      
       --text-primary: #ffffff;
-      --text-secondary: #b8bcc8;
-      --text-accent: #4facfe;
-      --border-glass: rgba(255, 255, 255, 0.2);
-      --shadow-glow: 0 8px 32px rgba(102, 126, 234, 0.2);
-      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(59, 130, 246, 0.4);
+      
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.25);
+      --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.15);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
     }
 
     * {
@@ -31,31 +50,30 @@
     }
 
     body {
-      background: var(--dark-bg);
-      background-image: 
-        radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
       color: var(--text-primary);
-      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
       min-height: 100vh;
-      backdrop-filter: blur(10px);
+      padding: 20px;
+      overflow-x: hidden;
+      
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     }
 
     .container {
-      width: 100%;
       max-width: 600px;
       margin: 0 auto;
-      animation: fadeInUp 0.8s ease-out;
+      position: relative;
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes fadeInUp {
+    @keyframes slideUp {
       from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(40px);
       }
       to {
         opacity: 1;
@@ -63,128 +81,297 @@
       }
     }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
     }
 
-    @keyframes glow {
-      0%, 100% { box-shadow: var(--shadow-card); }
-      50% { box-shadow: var(--shadow-glow); }
-    }
-
-    h1 {
-      font-size: 2em;
-      font-weight: 700;
-      margin-bottom: 20px;
-      background: var(--primary-gradient);
+    .title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
 
-    #currentTime {
-      font-size: 1.8em;
-      color: var(--text-accent);
-      font-weight: 500;
-      margin: 20px 0;
-      text-shadow: 0 0 20px rgba(79, 172, 254, 0.5);
-      animation: pulse 2s infinite;
+    .subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 400;
     }
 
-    #nextBusResult {
-      background: var(--glass-bg);
+    /* Mode Switcher */
+    .mode-switcher {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      margin-bottom: 24px;
       backdrop-filter: blur(20px);
-      border: 1px solid var(--border-glass);
-      border-radius: 24px;
-      padding: 30px;
-      margin: 30px 0;
-      box-shadow: var(--shadow-card);
-      transition: all 0.3s ease;
-      animation: glow 3s infinite;
     }
 
-    #nextBusResult:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--shadow-glow);
+    .mode-button {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
     }
 
-    .departure-time-main {
-      font-size: clamp(3.2em, 14vw, 4em);
+    .mode-button.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-sm);
+      transform: scale(1.02);
+    }
+
+    .mode-button:hover:not(.active) {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    /* Clock */
+    .clock {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .current-time {
+      font-size: clamp(2rem, 6vw, 2.5rem);
       font-weight: 700;
-      background: var(--accent-gradient);
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+    }
+
+    /* Main Card */
+    .main-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .main-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      opacity: 0.5;
+    }
+
+    .main-card.loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--bg-tertiary);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Itinerary */
+    .main-countdown {
+      text-align: center;
+      /* ★★★ 文字サイズを大きく ★★★ */
+      font-size: clamp(1.5rem, 5vw, 1.75rem);
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 32px;
+      min-height: 1.5em;
+    }
+
+    .itinerary {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .itinerary-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: all 0.3s ease;
+    }
+
+    .itinerary-step:hover {
+      background: var(--bg-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .step-time {
+      /* ★★★ 文字サイズを大きく ★★★ */
+      font-size: clamp(1.75rem, 6vw, 2.25rem);
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 4px;
+    }
+
+    .step-location {
+      /* ★★★ 文字サイズを大きく ★★★ */
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .itinerary-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      position: relative;
+    }
+
+    .connector-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .connector-text {
+      /* ★★★ 文字サイズを大きく ★★★ */
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    /* Direct Bus Info */
+    .departure-time-main {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 800;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      line-height: 1.2;
-      margin-bottom: 15px;
-      text-shadow: 0 0 50px rgba(79, 172, 254, 0.3);
+      margin-bottom: 16px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
     }
 
-    .time-remaining {
-      font-size: 1.6em;
-      color: var(--text-accent);
-      font-weight: 500;
-      min-height: 1.8em;
-      text-shadow: 0 0 15px rgba(79, 172, 254, 0.4);
+    .time-remaining-direct {
+      /* ★★★ 文字サイズを大きく ★★★ */
+      font-size: 1.5rem;
+      color: var(--accent);
+      font-weight: 600;
+      text-align: center;
+      min-height: 1.5em;
+      margin-bottom: 24px;
     }
 
-    #nextBusResult .details {
+    .details-direct {
       display: flex;
       justify-content: center;
       gap: 12px;
-      margin-top: 20px;
       flex-wrap: wrap;
+      margin-bottom: 24px;
     }
 
     .detail-tag {
-      padding: 10px 18px;
-      border-radius: 20px;
-      font-size: 1em;
+      padding: 8px 16px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-size: 0.875rem;
       font-weight: 500;
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border-glass);
       color: var(--text-primary);
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
     }
 
     .detail-tag:hover {
-      transform: translateY(-2px);
-      background: var(--secondary-gradient);
-      box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+      background: var(--primary);
+      color: white;
+      transform: translateY(-1px);
     }
 
     .divider {
-      border: none;
       height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border-glass), transparent);
-      margin: 25px 0;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      border: none;
+      margin: 24px 0;
     }
 
-    #secondNextBus {
-      min-height: 2.5em;
+    .second-bus {
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    .second-bus-info {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #secondNextBus .info,
-    #secondNextBus .countdown {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      font-size: 0.95em;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      font-size: 0.875rem;
       color: var(--text-secondary);
     }
 
-    #secondNextBus .time {
+    .second-bus-time {
       font-weight: 600;
-      color: var(--text-accent);
+      color: var(--accent);
+    }
+
+    .second-countdown {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Lower Section */
+    .lower-section {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
 
     .button-container {
@@ -192,87 +379,57 @@
       justify-content: center;
       gap: 12px;
       flex-wrap: wrap;
-      margin: 20px 0;
-    }
-
-    #busStopContainer {
-      margin: 40px 0 20px 0;
-    }
-
-    #routeFilterContainer {
-      margin-bottom: 40px;
     }
 
     .filter-button {
-      font-size: 1em;
-      padding: 14px 24px;
-      border: 1px solid var(--border-glass);
-      border-radius: 16px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
+      padding: 12px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
       color: var(--text-primary);
-      cursor: pointer;
-      transition: all 0.3s ease;
+      font-size: 0.875rem;
       font-weight: 500;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .filter-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: var(--primary-gradient);
-      transition: left 0.3s ease;
-      z-index: -1;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
     }
 
     .filter-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .filter-button:hover::before {
-      left: 0;
+      background: var(--bg-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
 
     .filter-button.active {
-      background: var(--primary-gradient);
-      color: var(--text-primary);
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-      transform: translateY(-2px);
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-glow);
     }
 
     .route-filter-button {
-      padding: 10px 18px;
-      font-size: 0.9em;
+      padding: 8px 16px;
+      font-size: 0.8125rem;
     }
 
-    #upcomingBusesResult {
-      text-align: left;
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    /* Bus List */
+    .upcoming-buses {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .bus-item {
-      background: var(--glass-bg);
-      backdrop-filter: blur(15px);
-      border: 1px solid var(--border-glass);
-      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: 20px;
-      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
       position: relative;
       overflow: hidden;
     }
@@ -280,266 +437,450 @@
     .bus-item::before {
       content: '';
       position: absolute;
-      top: 0;
       left: 0;
+      top: 0;
       width: 4px;
       height: 100%;
-      background: var(--accent-gradient);
+      background: var(--primary);
     }
 
     .bus-item:hover {
+      background: var(--bg-hover);
       transform: translateX(8px);
-      background: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 4px 20px rgba(79, 172, 254, 0.2);
+      box-shadow: var(--shadow-lg);
     }
 
-    .bus-item .time {
-      font-size: 1.6em;
-      font-weight: 600;
+    .bus-time {
+      /* ★★★ 文字サイズを大きく ★★★ */
+      font-size: 1.375rem;
+      font-weight: 700;
       color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
     }
 
-    .bus-item .route {
-      font-size: 1em;
-      color: var(--text-secondary);
+    .bus-route {
       padding: 6px 12px;
-      background: var(--glass-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-glass);
-    }
-
-    footer {
-      margin-top: 60px;
-      padding: 30px;
-      border-top: 1px solid var(--border-glass);
-      font-size: 0.85em;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 500;
       color: var(--text-secondary);
-      background: rgba(255, 255, 255, 0.02);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
     }
 
-    footer a {
-      color: var(--text-accent);
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-      text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+    /* Footer */
+    footer {
+      margin-top: 64px;
+      padding: 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      text-align: center;
+      backdrop-filter: blur(20px);
     }
 
     footer p {
-      margin: 12px 0;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin: 8px 0;
+      line-height: 1.5;
     }
 
-    #backToTopButton {
-      display: none;
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    footer a:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+
+    /* Back to Top Button */
+    .back-to-top {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
-      z-index: 99;
-      border: none;
-      outline: none;
-      background: var(--primary-gradient);
+      bottom: 24px;
+      right: 24px;
+      width: 48px;
+      height: 48px;
+      background: var(--primary);
       color: white;
+      border: none;
+      border-radius: 50%;
       cursor: pointer;
-      padding: 16px 20px;
-      border-radius: 20px;
-      font-size: 1.2em;
-      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
+      font-size: 1.25rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      display: none;
     }
 
-    #backToTopButton:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+    .back-to-top:hover {
+      background: var(--primary-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
     }
 
-    /* レスポンシブ対応 */
+    /* Mobile Responsive */
     @media (max-width: 480px) {
-      .container {
-        padding: 0 10px;
+      body {
+        padding: 16px;
       }
       
-      h1 {
-        font-size: 1.6em;
-      }
-      
-      #nextBusResult {
-        padding: 20px;
-        margin: 20px 0;
-      }
-      
-      .filter-button {
-        padding: 12px 18px;
-        font-size: 0.9em;
+      .main-card {
+        padding: 24px;
       }
       
       .button-container {
         gap: 8px;
       }
+      
+      .filter-button {
+        padding: 10px 16px;
+        font-size: 0.8125rem;
+      }
     }
 
-    /* ローディングアニメーション */
-    .loading {
-      animation: loadingPulse 1.5s infinite;
+    /* Dark mode enhancements */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.2);
+      }
     }
 
-    @keyframes loadingPulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
+    /* Animation utilities */
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <h1>俺専用バスナビ</h1>
-    <div id="currentTime">--:--:--</div>
-    
-    <div id="nextBusResult">
-      <div class="departure-time-main loading">読み込み中...</div>
-      <div class="time-remaining"></div>
-      <div class="details"></div>
-      <hr class="divider">
-      <div id="secondNextBus"></div>
+    <div class="header">
+      <h1 class="title">俺専用バスナビ</h1>
+      <p class="subtitle">v14.1 Polished</p>
     </div>
     
-    <div id="busStopContainer" class="button-container">
-      <button class="filter-button" data-stop="yokodaikita">洋光台北口</button>
-      <button class="filter-button" data-stop="hinosyo">日野小学校前</button>
-      <button class="filter-button" data-stop="hinotyuokouen">日野中央公園入口</button>
+    <div class="mode-switcher">
+      <button class="mode-button active" data-mode="to_kamiooka">南陵方面 → 上大岡</button>
+      <button class="mode-button" data-mode="from_kamiooka">上大岡 → 古泉</button>
     </div>
-    <div id="routeFilterContainer" class="button-container">
-      <button class="filter-button route-filter-button" data-route="all">すべて</button>
-      <button class="filter-button route-filter-button" data-route="市営111">市営111</button>
-      <button class="filter-button route-filter-button" data-route="市営64">市営64</button>
-      <button class="filter-button route-filter-button" data-route="市営2">市営2</button>
+    
+    <div class="clock">
+      <div class="current-time" id="currentTime">--:--:--</div>
     </div>
-    <div id="upcomingBusesResult"><p style="color: #888;">上のバス停ボタンを押してください</p></div>
+    
+    <div class="main-card loading" id="nextBusResult">
+      <div class="loading-spinner"></div>
+      <div>読み込み中...</div>
+    </div>
+    
+    <div class="lower-section" id="lowerSection">
+      <div class="button-container" id="busStopContainer">
+        <!-- ★★★ ボタンを復活させる ★★★ -->
+        <button class="filter-button" data-stop="yokodaikita">洋光台北口</button>
+        <button class="filter-button" data-stop="hinosyo">日野小学校前</button>
+        <button class="filter-button" data-stop="hinotyuokouen">日野中央公園入口</button>
+      </div>
+      
+      <div class="button-container" id="routeFilterContainer">
+        <button class="filter-button route-filter-button" data-route="all">すべて</button>
+        <button class="filter-button route-filter-button" data-route="市営111">市営111</button>
+        <button class="filter-button route-filter-button" data-route="市営64">市営64</button>
+        <button class="filter-button route-filter-button" data-route="市営2">市営2</button>
+      </div>
+      
+      <div class="upcoming-buses" id="upcomingBusesResult"></div>
+    </div>
   </div>
   
   <footer>
-    <p>最終更新日: 2025/07/27</p>
-    <p>この時刻が間違っていても責任は負いかねます。<br>正確な情報は<a href="https://www.city.yokohama.lg.jp/kotsu/bus/" target="_blank" rel="noopener noreferrer">横浜市営バス公式サイト</a>をご確認ください。</p>
+    <p>最終更新日: 2025/08/09</p>
+    <p>この時刻が間違っていても責任は負いかねます。<br>
+    正確な情報は<a href="https://www.city.yokohama.lg.jp/kotsu/bus/" target="_blank" rel="noopener noreferrer">横浜市営バス公式サイト</a>をご確認ください。</p>
   </footer>
   
-  <button id="backToTopButton">▲</button>
+  <button class="back-to-top" id="backToTopButton">↑</button>
 
   <script>
     const API_URL = "./bus_data.json";
+    const TRANSFER_BUFFER_MINUTES = 5;
+    let allBusData = [], optimalPair = null, nextBusFromKamiooka = null, secondBusFromKamiooka = null;
+    // ★★★ busStopNames に hinotyuokouen を復活 ★★★
+    const busStopNames = { yokodaikita: "洋光台北口", hinosyo: "日野小学校前", hinotyuokouen: "日野中央公園入口", kamioooka: "上大岡駅前", kosen: "古泉" };
+    let currentMode = 'to_kamiooka', currentStopId = null, currentRouteFilter = 'all';
     
-    // --- グローバル変数 ---
-    let allBusData = [];
-    let nextBus = null;
-    let secondBus = null;
-    const busStopNames = { yokodaikita: "洋光台北口", hinosyo: "日野小学校前", hinotyuokouen: "日野中央公園入口" };
-    let currentStopId = null;
-    let currentRouteFilter = 'all';
-    
-    // --- HTML要素の取得 ---
+    const modeButtons = document.querySelectorAll('.mode-button');
+    const lowerSection = document.getElementById('lowerSection');
+    const busStopContainer = document.getElementById('busStopContainer');
+    const routeFilterContainer = document.getElementById('routeFilterContainer');
     const currentTimeDiv = document.getElementById('currentTime');
     const busStopButtons = document.querySelectorAll('#busStopContainer .filter-button');
     const routeFilterButtons = document.querySelectorAll('#routeFilterContainer .filter-button');
+    const nextBusResultDiv = document.getElementById('nextBusResult');
     const upcomingBusesResultDiv = document.getElementById('upcomingBusesResult');
-    const backToTopButton = document.getElementById('backToTopButton');
-    const mainTimeDiv = document.querySelector('.departure-time-main');
-    const remainingTimeDiv = document.querySelector('.time-remaining');
-    const detailsDiv = document.querySelector('.details');
-    const secondNextBusDiv = document.getElementById('secondNextBus');
 
-    // --- メインロジック ---
-
-    // 1. 初期化処理
     document.addEventListener('DOMContentLoaded', async () => {
       setInterval(() => {
         const now = new Date();
         currentTimeDiv.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
       }, 1000);
-
+      
       try {
         const response = await fetch(API_URL);
         const data = await response.json();
         const today = new Date();
-        const y = today.getFullYear();
-        const m = today.getMonth();
-        const d = today.getDate();
+        const y = today.getFullYear(), m = today.getMonth(), d = today.getDate();
+        
         allBusData = data.map(bus => {
           const [h, min] = bus.time.split(':').map(Number);
           bus.departureTimestamp = new Date(y, m, d, h, min).getTime();
+          if (bus.arrivalTime) {
+            const [ah, amin] = bus.arrivalTime.split(':').map(Number);
+            bus.arrivalTimestamp = new Date(y, m, d, ah, amin).getTime();
+          }
           return bus;
         }).sort((a, b) => a.departureTimestamp - b.departureTimestamp);
-
-        mainTimeDiv.classList.remove('loading');
-        findAndSetNextBuses();
+        
+        nextBusResultDiv.classList.remove('loading');
+        findAndDisplay();
+        updateLowerSection();
+        
         setInterval(updateCountdowns, 1000);
-        setInterval(findAndSetNextBuses, 30000);
+        setInterval(findAndDisplay, 30000);
+        
         document.querySelector('.filter-button[data-route="all"]').classList.add('active');
-      } catch (error) { 
-        console.error("データ取得エラー:", error); 
-        mainTimeDiv.classList.remove('loading');
-        mainTimeDiv.textContent = "取得失敗"; 
+      } catch (error) {
+        console.error("データ取得エラー:", error);
+        nextBusResultDiv.classList.remove('loading');
+        nextBusResultDiv.innerHTML = '<div style="text-align: center; color: var(--error);">データの取得に失敗しました</div>';
       }
     });
 
-    // 2. 次のバスを探す
-    function findAndSetNextBuses() {
-      const targetStops = ['yokodaikita', 'hinosyo'];
-      const now = new Date().getTime();
-      const availableBuses = allBusData.filter(bus => targetStops.includes(bus.busStop) && bus.departureTimestamp >= now);
-      nextBus = availableBuses[0] || null;
-      secondBus = availableBuses[1] || null;
-      displayStaticInfo();
-    }
+    modeButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        modeButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        currentMode = button.dataset.mode;
+        findAndDisplay();
+        updateLowerSection();
+      });
+    });
 
-    // 3. 残り時間を毎秒更新
-    function updateCountdowns() {
-      if (!nextBus) return;
-      const now = new Date().getTime();
-      const diff1 = nextBus.departureTimestamp - now;
-      if (diff1 < 0) { findAndSetNextBuses(); return; }
-      remainingTimeDiv.textContent = formatRemainingTime(diff1);
-      const secondCountdownEl = document.getElementById('second-countdown');
-      if (secondBus && secondCountdownEl) {
-        const diff2 = secondBus.departureTimestamp - now;
-        secondCountdownEl.textContent = `あと ${formatRemainingTime(diff2, true)}`;
+    function updateLowerSection() {
+      if (currentMode === 'to_kamiooka') {
+        busStopContainer.style.display = 'flex';
+        routeFilterContainer.style.display = 'flex';
+        if (!currentStopId) {
+          upcomingBusesResultDiv.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">上のバス停ボタンを押して詳細を表示</p>`;
+        } else {
+          displayUpcomingBuses();
+        }
+      } else {
+        busStopContainer.style.display = 'none';
+        routeFilterContainer.style.display = 'none';
+        displayKamiookaBusList();
       }
     }
     
-    // 4. 静的な情報を表示
-    function displayStaticInfo() {
-      if (nextBus) {
-        mainTimeDiv.textContent = nextBus.time;
-        detailsDiv.innerHTML = `<span class="detail-tag">${busStopNames[nextBus.busStop]}</span><span class="detail-tag">${nextBus.route}</span>`;
+    function findAndDisplay() {
+      if (currentMode === 'to_kamiooka') {
+        optimalPair = findOptimalTransfer();
+        displayTransferInfo();
       } else {
-        mainTimeDiv.textContent = "終了";
-        detailsDiv.innerHTML = "";
-        remainingTimeDiv.textContent = "お疲れ様でした";
-      }
-      if (secondBus) {
-        secondNextBusDiv.innerHTML = `<div class="info"><span>その次は:</span><span class="time">${secondBus.time} 発</span><span>(${busStopNames[secondBus.busStop]} / ${secondBus.route})</span></div><div class="countdown" id="second-countdown"></div>`;
-      } else {
-        secondNextBusDiv.innerHTML = nextBus ? "これが最終バスです" : "";
+        const now = new Date().getTime();
+        const available = allBusData.filter(b => b.busStop === 'kamioooka' && b.departureTimestamp >= now);
+        nextBusFromKamiooka = available[0] || null;
+        secondBusFromKamiooka = available[1] || null;
+        displayDirectBusInfo();
       }
     }
 
-    // 5. 残り時間フォーマット用ヘルパー
+    function findOptimalTransfer() {
+      const now = new Date().getTime();
+      const transferBufferMs = TRANSFER_BUFFER_MINUTES * 60 * 1000;
+      // ★★★ 乗り換え検索ロジックは hinotyuokouen を除外したまま (これが正しい挙動) ★★★
+      const futureToKamiooka = allBusData.filter(b => ['yokodaikita', 'hinosyo'].includes(b.busStop) && b.departureTimestamp >= now);
+      const futureFromKamiooka = allBusData.filter(b => b.busStop === 'kamioooka' && b.departureTimestamp >= now);
+      
+      if (!futureToKamiooka.length || !futureFromKamiooka.length) return null;
+      
+      for (const departureBus of futureToKamiooka) {
+        if (!departureBus.arrivalTimestamp) continue;
+        const connectingBus = futureFromKamiooka.find(transferBus => 
+          transferBus.departureTimestamp >= (departureBus.arrivalTimestamp + transferBufferMs)
+        );
+        if (connectingBus) return { departureBus, connectingBus };
+      }
+      return null;
+    }
+
+    function displayTransferInfo() {
+      if (optimalPair) {
+        const { departureBus, connectingBus } = optimalPair;
+        const waitTimeMin = Math.floor((connectingBus.departureTimestamp - departureBus.arrivalTimestamp) / (1000 * 60));
+        
+        nextBusResultDiv.innerHTML = `
+          <div class="main-countdown" id="main-countdown"></div>
+          <div class="itinerary">
+            <div class="itinerary-step">
+              <div class="step-time">${departureBus.time}</div>
+              <div class="step-location">${busStopNames[departureBus.busStop]}</div>
+            </div>
+            <div class="itinerary-connector">
+              <div class="connector-icon">🚌</div>
+              <div class="connector-text">${departureBus.route} 上大岡行</div>
+            </div>
+            <div class="itinerary-step">
+              <div class="step-time">${departureBus.arrivalTime}</div>
+              <div class="step-location">上大岡駅 到着</div>
+            </div>
+            <div class="itinerary-connector">
+              <div class="connector-icon">${waitTimeMin}分</div>
+              <div class="connector-text">乗り換え</div>
+            </div>
+            <div class="itinerary-step">
+              <div class="step-time">${connectingBus.time}</div>
+              <div class="step-location">上大岡駅 発車</div>
+            </div>
+            <div class="itinerary-connector">
+              <div class="connector-icon">🚌</div>
+              <div class="connector-text">${connectingBus.route}</div>
+            </div>
+            <div class="itinerary-step">
+              <div class="step-time">${connectingBus.arrivalTime}</div>
+              <div class="step-location">古泉 到着</div>
+            </div>
+          </div>
+        `;
+      } else {
+        nextBusResultDiv.innerHTML = `
+          <div style="text-align: center;">
+            <div class="departure-time-main">終了</div>
+            <div class="time-remaining-direct">最適な接続がありません</div>
+          </div>
+        `;
+      }
+    }
+
+    function displayDirectBusInfo() {
+      if (nextBusFromKamiooka) {
+        const secondBusHTML = secondBusFromKamiooka ? `
+          <div class="second-bus">
+            <div class="second-bus-info">
+              <span>その次は:</span>
+              <span class="second-bus-time">${secondBusFromKamiooka.time} 発</span>
+              <span>(${busStopNames[secondBusFromKamiooka.busStop]} / ${secondBusFromKamiooka.route})</span>
+            </div>
+            <div class="second-countdown" id="second-countdown"></div>
+          </div>
+        ` : `<div class="second-bus">これが最終バスです</div>`;
+        
+        nextBusResultDiv.innerHTML = `
+          <div style="text-align: center;">
+            <div class="departure-time-main">${nextBusFromKamiooka.time}</div>
+            <div class="time-remaining-direct" id="main-countdown"></div>
+            <div class="details-direct">
+              <span class="detail-tag">${busStopNames[nextBusFromKamiooka.busStop]}</span>
+              <span class="detail-tag">${nextBusFromKamiooka.route}</span>
+            </div>
+            <hr class="divider">
+            ${secondBusHTML}
+          </div>
+        `;
+      } else {
+        nextBusResultDiv.innerHTML = `
+          <div style="text-align: center;">
+            <div class="departure-time-main">終了</div>
+            <div class="time-remaining-direct">お疲れ様でした</div>
+          </div>
+        `;
+      }
+    }
+    
+    function updateCountdowns() {
+      const now = new Date().getTime();
+      let busToTrack;
+      
+      if (currentMode === 'to_kamiooka') {
+        busToTrack = optimalPair ? optimalPair.departureBus : null;
+        const countdownEl = document.getElementById('main-countdown');
+        if (busToTrack && countdownEl) {
+          const diff = busToTrack.departureTimestamp - now;
+          if (diff < 0) {
+            findAndDisplay();
+            return;
+          }
+          countdownEl.textContent = formatRemainingTime(diff);
+        }
+      } else {
+        busToTrack = nextBusFromKamiooka;
+        const secondCountdownEl = document.getElementById('second-countdown');
+        if (secondBusFromKamiooka && secondCountdownEl) {
+          secondCountdownEl.textContent = `あと ${formatRemainingTime(secondBusFromKamiooka.departureTimestamp - now, true)}`;
+        }
+        const countdownEl = document.getElementById('main-countdown');
+        if (busToTrack && countdownEl) {
+          const diff = busToTrack.departureTimestamp - now;
+          if (diff < 0) {
+            findAndDisplay();
+            return;
+          }
+          countdownEl.textContent = formatRemainingTime(diff);
+        }
+      }
+    }
+
     function formatRemainingTime(ms, simple = false) {
       const totalSeconds = Math.round(ms / 1000);
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
+      
       if (minutes < 1 && totalSeconds <= 10) return "まもなく発車";
       if (minutes < 1) return `あと ${seconds} 秒`;
       if (simple) return `${minutes}分`;
       return `あと ${minutes}分 ${String(seconds).padStart(2, '0')}秒`;
     }
     
-    // --- ボタンの機能 ---
-
-    // 6. バス停ボタンのイベントリスナー
+    function displayKamiookaBusList() {
+      const now = new Date().getTime();
+      const upcomingBuses = allBusData.filter(bus => 
+        bus.busStop === 'kamioooka' && bus.departureTimestamp >= now
+      );
+      
+      if (upcomingBuses.length > 0) {
+        upcomingBusesResultDiv.innerHTML = upcomingBuses.map(bus => `
+          <div class="bus-item">
+            <div class="bus-time">${bus.time} 発</div>
+            <div class="bus-route">${bus.route}</div>
+          </div>
+        `).join('');
+      } else {
+        upcomingBusesResultDiv.innerHTML = `
+          <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+            本日のバスは終了しました。
+          </p>
+        `;
+      }
+    }
+    
+    // Event listeners
+    const backToTopButton = document.getElementById('backToTopButton');
+    
     busStopButtons.forEach(button => {
       button.addEventListener('click', () => {
         busStopButtons.forEach(btn => btn.classList.remove('active'));
@@ -547,9 +888,8 @@
         currentStopId = button.dataset.stop;
         displayUpcomingBuses();
       });
-    })
-
-    // 7. 系統ボタンのイベントリスナー
+    });
+    
     routeFilterButtons.forEach(button => {
       button.addEventListener('click', () => {
         routeFilterButtons.forEach(btn => btn.classList.remove('active'));
@@ -558,12 +898,11 @@
         displayUpcomingBuses();
       });
     });
-
-    // 8. バス一覧を表示する関数
+    
     function displayUpcomingBuses() {
       if (!currentStopId) return;
+      
       const now = new Date().getTime();
-
       let upcomingBuses = allBusData.filter(bus => 
         bus.busStop === currentStopId && bus.departureTimestamp >= now
       );
@@ -571,30 +910,44 @@
       if (currentRouteFilter !== 'all') {
         upcomingBuses = upcomingBuses.filter(bus => bus.route === currentRouteFilter);
       }
-
-      upcomingBusesResultDiv.innerHTML = ""; 
+      
+      upcomingBusesResultDiv.innerHTML = "";
+      upcomingBusesResultDiv.classList.add('fade-in');
+      
       if (upcomingBuses.length > 0) {
         upcomingBuses.forEach(bus => {
-          const busItem = `<div class="bus-item"><div class="time">${bus.time} 発</div><div class="route">${bus.route}</div></div>`;
+          const busItem = `
+            <div class="bus-item">
+              <div class="bus-time">${bus.time} 発</div>
+              <div class="bus-route">${bus.route}</div>
+            </div>
+          `;
           upcomingBusesResultDiv.innerHTML += busItem;
         });
       } else {
-        upcomingBusesResultDiv.innerHTML = `<p style="color: #888;">条件に合うバスはありません。</p>`;
+        upcomingBusesResultDiv.innerHTML = `
+          <p style="color: var(--text-muted); text-align: center; padding: 20px;">
+            条件に合うバスはありません。
+          </p>
+        `;
       }
     }
-
-    // 9. トップに戻るボタンのイベントリスナー
-    window.onscroll = () => { 
-      if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) { 
-        backToTopButton.style.display = "block"; 
-      } else { 
-        backToTopButton.style.display = "none"; 
-      } 
+    
+    // Scroll to top functionality
+    window.onscroll = () => {
+      if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+        backToTopButton.style.display = "block";
+      } else {
+        backToTopButton.style.display = "none";
+      }
     };
-    backToTopButton.addEventListener('click', () => { 
-      window.scrollTo({top: 0, behavior: 'smooth'}); 
+    
+    backToTopButton.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     });
-
   </script>
 </body>
 </html>
